@@ -23,14 +23,31 @@ def plot_mood_trends(emotions):
     df["Emotion"] = df["Log"].str.split(": ").str[1]
     emotion_counts = df["Emotion"].value_counts()
 
-    st.bar_chart(emotion_counts)
+    if not emotion_counts.empty:
+        st.bar_chart(emotion_counts)
+    else:
+        st.warning("No emotions to display trends.")
+
+# Function to log conversations to the diary
+def log_conversation(user_input, bot_response):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open('diary_log.txt', 'a') as f:
+        f.write(f"{timestamp} - User: {user_input}\n")
+        f.write(f"{timestamp} - Bot: {bot_response}\n\n")
+
+# Function to read logged conversations from the diary
+def read_conversations():
+    if os.path.exists('diary_log.txt'):
+        with open('diary_log.txt', 'r') as f:
+            return f.readlines()
+    return []
 
 # Streamlit UI
 st.title("Emotion Detection System")
 
 # Sidebar for navigation
 st.sidebar.header("Navigation")
-option = st.sidebar.selectbox("Choose an option:", ["Home", "Run Chatbot", "View Emotions Log", "Show Mood Trends", "Support Resources"])
+option = st.sidebar.selectbox("Choose an option:", ["Home", "Run Chatbot", "View Emotions Log", "Show Mood Trends", "View Diary Log", "Support Resources"])
 
 # Main application logic based on user selection
 if option == "Home":
@@ -58,6 +75,15 @@ elif option == "Show Mood Trends":
     else:
         st.warning("No emotions logged yet.")
 
+elif option == "View Diary Log":
+    diary_entries = read_conversations()
+    if diary_entries:
+        st.write("Diary Entries:")
+        for entry in diary_entries:
+            st.write(entry.strip())
+    else:
+        st.warning("No conversations logged yet.")
+
 elif option == "Support Resources":
     st.subheader("Supportive Resources")
     st.write("If you're feeling low, here are some resources you can consider:")
@@ -66,4 +92,3 @@ elif option == "Support Resources":
     st.write("- **BetterHelp:** [Visit BetterHelp](https://www.betterhelp.com) for online therapy.")
     st.write("- **Mindfulness Apps:** Consider trying mindfulness apps like Headspace or Calm for stress relief.")
     st.write("- **Journaling:** Writing about your feelings can help. Use our logging feature to keep track of your emotions.")
-
